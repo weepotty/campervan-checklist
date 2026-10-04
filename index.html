@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campervan Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one header strip, then sections flowing in balanced columns that print cleanly on one or two A4 sheets */
+:root {
+  --bg: #f3f5f4;
+  --paper: #ffffff;
+  --ink: #17262a;
+  --muted: #5d6e70;
+  --line: #d5dedd;
+  --sea: #1f6f73;
+  --gorse: #e3b230;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a1c; --paper: #16272a; --ink: #e5eeec; --muted: #94a9a8; --line: #2b3f42; --sea: #5fb8b5; --gorse: #e8c051;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a1c; --paper: #16272a; --ink: #e5eeec; --muted: #94a9a8; --line: #2b3f42; --sea: #5fb8b5; --gorse: #e8c051;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; padding: 32px 16px 48px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 24px; border-bottom: 3px solid var(--ink); padding-bottom: 18px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 0.95; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--sea); }
+.sub { margin: 10px 0 0; color: var(--muted); max-width: 46ch; }
+.tools { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.count { font-family: var(--display); font-weight: 600; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.bar { width: 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--sea); transition: width .25s; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+button { font: inherit; font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+button:hover { border-color: var(--sea); }
+button:focus-visible, input:focus-visible + .box { outline: 2px solid var(--sea); outline-offset: 2px; }
+button.danger { border-color: var(--gorse); }
+.confirm { font-size: 0.85rem; color: var(--muted); }
+
+.key { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+.key .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gorse); flex: none; }
+
+.grid { columns: 2 320px; column-gap: 28px; }
+section { break-inside: avoid; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 12px; margin-bottom: 28px; display: inline-block; width: 100%; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.3rem; margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+h2 small { font-family: var(--body); font-size: 0.8rem; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.note { margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); }
+ul { list-style: none; margin: 0; padding: 0; }
+li + li { border-top: 1px dashed var(--line); }
+label { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; }
+input { position: absolute; opacity: 0; pointer-events: none; }
+.box { width: 20px; height: 20px; border: 2px solid var(--ink); border-radius: 4px; flex: none; display: grid; place-items: center; }
+.box::after { content: ""; width: 10px; height: 5px; border-left: 2.5px solid var(--paper); border-bottom: 2.5px solid var(--paper); transform: rotate(-45deg) translate(1px, -1px); opacity: 0; }
+input:checked + .box { background: var(--sea); border-color: var(--sea); }
+input:checked + .box::after { opacity: 1; }
+input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
+.txt { flex: 1; min-width: 0; }
+.sug { width: 8px; height: 8px; border-radius: 50%; background: var(--gorse); flex: none; }
+
+@media (max-width: 560px) {
+  .tools { align-items: flex-start; }
+  .btns { justify-content: flex-start; }
+}
+@media print {
+  :root { --bg: #fff; --paper: #fff; --ink: #000; --muted: #444; --line: #bbb; --sea: #000; --gorse: #999; color-scheme: light; }
+  body { padding: 0; font-size: 12px; }
+  .btns, .bar, .count { display: none; }
+  section { border: none; padding: 0; margin-bottom: 16px; }
+  label { padding: 4px 0; }
+  .grid { columns: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Campervan<br><span>checklist</span></h1>
+      <p class="sub">Food, van checks, bedding and beach kit for the trip. Tick things off as they go in the van.</p>
+    </div>
+    <div class="tools">
+      <div class="count" id="count">0 of 0 packed</div>
+      <div class="bar"><i id="fill"></i></div>
+      <div class="btns" id="btns">
+        <button type="button" id="print">Print</button>
+        <button type="button" id="reset">Clear ticks</button>
+      </div>
+    </div>
+  </header>
+  <div class="key"><span class="dot"></span>Extra ideas added to your list. Skip any you don't need.</div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const LIST = [
+  { id: "van", title: "Van checks", items: [
+    ["Water tank filled"], ["Enough gas"], ["Cutlery all there"], ["Bowls"], ["Plates"],
+    ["Mugs and cups", 1], ["Pots, pan and kettle", 1], ["Washing-up liquid, sponge and tea towel", 1],
+    ["Lighter or matches", 1], ["Fuel topped up", 1], ["Waste water tank emptied", 1]
+  ]},
+  { id: "bed", title: "Bedding", items: [
+    ["Clean bedding for the top bunk"], ["Clean bedding for the bottom bed"], ["Pillowcases"],
+    ["Duvets and pillows", 1], ["Spare blanket", 1]
+  ]},
+  { id: "food", title: "Food", items: [
+    ["Pasta"], ["Rice"], ["Cornflakes"], ["Milk"], ["Bread"], ["Jam"], ["Peanut butter"],
+    ["Apples"], ["Carrot sticks"], ["Fruit"], ["Biscuits"], ["Marshmallows"], ["Skewers"], ["Coffee"],
+    ["Tea bags", 1], ["Butter", 1], ["Salt, pepper and oil", 1], ["Drinking water", 1]
+  ]},
+  { id: "beach", title: "Beach and outdoors", items: [
+    ["Wetsuits"], ["Towels"], ["Swimsuits"], ["Crocs"], ["Scooters"], ["Helmets"],
+    ["Suncream", 1], ["Raincoats and fleeces", 1], ["Bucket and spade", 1]
+  ]},
+  { id: "kids", title: "Bedtime and kids", items: [
+    ["Yoto players"], ["Teddies"], ["Yoto cards and chargers", 1], ["Pyjamas", 1], ["Books", 1]
+  ]},
+  { id: "extras", title: "Extras", items: [
+    ["Bin bags"], ["Torch"], ["Kitchen roll"], ["Head torches", 1], ["Phone chargers and power bank", 1],
+    ["First aid kit and Calpol", 1], ["Toilet roll", 1], ["Wet wipes", 1],
+    ["Toothbrushes and toothpaste", 1], ["Alcohol gel"]
+  ]}
+];
+
+const KEY = "campervan-ticks";
+let ticked = {};
+try { ticked = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { ticked = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ticked)); } catch (e) {} };
+
+const grid = document.getElementById("grid");
+LIST.forEach(sec => {
+  const s = document.createElement("section");
+  const h = document.createElement("h2");
+  h.textContent = sec.title;
+  const small = document.createElement("small");
+  small.dataset.sec = sec.id;
+  h.appendChild(small);
+  s.appendChild(h);
+  const ul = document.createElement("ul");
+  sec.items.forEach(([name, suggested], i) => {
+    const id = sec.id + "-" + i;
+    const li = document.createElement("li");
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "checkbox"; input.id = id; input.checked = !!ticked[id]; input.dataset.sec = sec.id;
+    input.addEventListener("change", () => { ticked[id] = input.checked; if (!input.checked) delete ticked[id]; save(); update(); });
+    const box = document.createElement("span"); box.className = "box";
+    const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = name;
+    label.append(input, box, txt);
+    if (suggested) { const d = document.createElement("span"); d.className = "sug"; d.title = "Extra idea"; label.appendChild(d); }
+    li.appendChild(label); ul.appendChild(li);
+  });
+  s.appendChild(ul);
+  grid.appendChild(s);
+});
+
+function update() {
+  const all = [...document.querySelectorAll("input[type=checkbox]")];
+  const done = all.filter(i => i.checked).length;
+  document.getElementById("count").textContent = done + " of " + all.length + " packed";
+  document.getElementById("fill").style.width = (all.length ? done / all.length * 100 : 0) + "%";
+  LIST.forEach(sec => {
+    const ins = all.filter(i => i.dataset.sec === sec.id);
+    document.querySelector('small[data-sec="' + sec.id + '"]').textContent = ins.filter(i => i.checked).length + "/" + ins.length;
+  });
+}
+update();
+
+const btns = document.getElementById("btns");
+document.getElementById("reset").addEventListener("click", () => {
+  btns.innerHTML = "";
+  const msg = document.createElement("span"); msg.className = "confirm"; msg.textContent = "Clear all ticks?";
+  const yes = document.createElement("button"); yes.type = "button"; yes.className = "danger"; yes.textContent = "Clear";
+  const no = document.createElement("button"); no.type = "button"; no.textContent = "Keep";
+  const restore = () => { btns.innerHTML = ""; btns.append(printBtn, resetBtn); };
+  yes.addEventListener("click", () => {
+    ticked = {}; save();
+    document.querySelectorAll("input[type=checkbox]").forEach(i => { i.checked = false; });
+    update(); restore();
+  });
+  no.addEventListener("click", restore);
+  btns.append(msg, yes, no);
+});
+const resetBtn = document.getElementById("reset");
+const printBtn = document.getElementById("print");
+printBtn.addEventListener("click", () => window.print());
+</script>
+</body>
+</html>
