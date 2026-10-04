@@ -1,0 +1,14 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "ticks": {
+      ".read": true,
+      ".write": "!newData.exists()",
+      "$item": {
+        ".write": true,
+        ".validate": "$item.length < 200 && newData.val() === true"
+      }
+    }
+  }
+}

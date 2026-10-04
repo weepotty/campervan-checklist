@@ -51,6 +51,9 @@ button.danger { border-color: var(--gorse); }
 .confirm { font-size: 0.85rem; color: var(--muted); }
 
 .key { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+.key { flex-wrap: wrap; }
+.status { margin-left: auto; font-size: 0.8rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); }
+.status[data-live="1"] { border-color: var(--sea); color: var(--sea); }
 .key .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gorse); flex: none; }
 
 .grid { columns: 2 320px; column-gap: 28px; }
@@ -78,7 +81,7 @@ input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
 @media print {
   :root { --bg: #fff; --paper: #fff; --ink: #000; --muted: #444; --line: #bbb; --sea: #000; --gorse: #999; color-scheme: light; }
   body { padding: 0; font-size: 12px; }
-  .btns, .bar, .count { display: none; }
+  .btns, .bar, .count, .status { display: none; }
   section { border: none; padding: 0; margin-bottom: 16px; }
   label { padding: 4px 0; }
   .grid { columns: 2; }
@@ -98,20 +101,41 @@ input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
       <div class="bar"><i id="fill"></i></div>
       <div class="btns" id="btns">
         <button type="button" id="print">Print</button>
-        <button type="button" id="reset">Clear ticks</button>
+        <button type="button" id="reset">Clear all ticks</button>
       </div>
     </div>
   </header>
-  <div class="key"><span class="dot"></span>Extra ideas added to your list. Skip any you don't need.</div>
+  <div class="key"><span class="dot"></span>Extra ideas added to your list. Skip any you don't need.<span class="status" id="status" data-live="0">Connecting…</span></div>
   <div class="grid" id="grid"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const KEY = "campervan-ticks";
+firebase.initializeApp({
+  apiKey: "AIzaSyAEVFbDHOQGd-qShmdBOi7OeMXAcZOqw_c",
+  authDomain: "campervan-checklist-wp.firebaseapp.com",
+  databaseURL: "https://campervan-checklist-wp-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "campervan-checklist-wp",
+  appId: "1:202994426772:web:80261c4edcee84a91fa581"
+});
+const db = firebase.database();
+const ticksRef = db.ref("ticks");
+const toKey = (section, name) => encodeURIComponent(section + "|" + name).replace(/\./g, "%2E");
+
 let ticked = {};
-try { ticked = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { ticked = {}; }
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ticked)); } catch (e) {} };
+const status = document.getElementById("status");
+db.ref(".info/connected").on("value", snap => {
+  status.textContent = snap.val() ? "Live: ticks are shared" : "Offline: ticks will sync when you reconnect";
+  status.dataset.live = snap.val() ? "1" : "0";
+});
+ticksRef.on("value", snap => { ticked = snap.val() || {}; applyTicks(); });
+
+function applyTicks() {
+  document.querySelectorAll("input[type=checkbox]").forEach(i => { i.checked = !!ticked[i.dataset.key]; });
+  update();
+}
 
 const grid = document.getElementById("grid");
 let LIST = [];
@@ -139,12 +163,12 @@ function render() {
     s.appendChild(h);
     const ul = document.createElement("ul");
     sec.items.forEach(([name, suggested], i) => {
-      const key = sec.title + "|" + name;
+      const key = toKey(sec.title, name);
       const li = document.createElement("li");
       const label = document.createElement("label");
       const input = document.createElement("input");
-      input.type = "checkbox"; input.id = sec.id + "-" + i; input.checked = !!ticked[key]; input.dataset.sec = sec.id;
-      input.addEventListener("change", () => { if (input.checked) ticked[key] = true; else delete ticked[key]; save(); update(); });
+      input.type = "checkbox"; input.id = sec.id + "-" + i; input.checked = !!ticked[key]; input.dataset.sec = sec.id; input.dataset.key = key;
+      input.addEventListener("change", () => { ticksRef.child(key).set(input.checked ? true : null); update(); });
       const box = document.createElement("span"); box.className = "box";
       const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = name;
       label.append(input, box, txt);
@@ -182,14 +206,13 @@ fetch("list.yaml", { cache: "no-cache" })
 const btns = document.getElementById("btns");
 document.getElementById("reset").addEventListener("click", () => {
   btns.innerHTML = "";
-  const msg = document.createElement("span"); msg.className = "confirm"; msg.textContent = "Clear all ticks?";
+  const msg = document.createElement("span"); msg.className = "confirm"; msg.textContent = "Clear ticks for everyone?";
   const yes = document.createElement("button"); yes.type = "button"; yes.className = "danger"; yes.textContent = "Clear";
   const no = document.createElement("button"); no.type = "button"; no.textContent = "Keep";
   const restore = () => { btns.innerHTML = ""; btns.append(printBtn, resetBtn); };
   yes.addEventListener("click", () => {
-    ticked = {}; save();
-    document.querySelectorAll("input[type=checkbox]").forEach(i => { i.checked = false; });
-    update(); restore();
+    ticksRef.remove();
+    restore();
   });
   no.addEventListener("click", restore);
   btns.append(msg, yes, no);
