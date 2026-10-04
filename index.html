@@ -68,6 +68,7 @@ input:checked + .box { background: var(--sea); border-color: var(--sea); }
 input:checked + .box::after { opacity: 1; }
 input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
 .txt { flex: 1; min-width: 0; }
+.error { color: var(--ink); background: var(--paper); border: 1px solid var(--gorse); border-radius: 10px; padding: 16px; margin: 0; }
 .sug { width: 8px; height: 8px; border-radius: 50%; background: var(--gorse); flex: none; }
 
 @media (max-width: 560px) {
@@ -105,67 +106,56 @@ input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
   <div class="grid" id="grid"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
 <script>
-const LIST = [
-  { id: "van", title: "Van checks", items: [
-    ["Water tank filled"], ["Enough gas"], ["Cutlery all there"], ["Bowls"], ["Plates"],
-    ["Mugs and cups", 1], ["Pots, pan and kettle", 1], ["Washing-up liquid, sponge and tea towel", 1],
-    ["Lighter or matches", 1], ["Fuel topped up", 1], ["Waste water tank emptied", 1]
-  ]},
-  { id: "bed", title: "Bedding", items: [
-    ["Clean bedding for the top bunk"], ["Clean bedding for the bottom bed"], ["Pillowcases"],
-    ["Duvets and pillows", 1], ["Spare blanket", 1]
-  ]},
-  { id: "food", title: "Food", items: [
-    ["Pasta"], ["Rice"], ["Cornflakes"], ["Milk"], ["Bread"], ["Jam"], ["Peanut butter"],
-    ["Apples"], ["Carrot sticks"], ["Fruit"], ["Biscuits"], ["Marshmallows"], ["Skewers"], ["Coffee"],
-    ["Tea bags", 1], ["Butter", 1], ["Salt, pepper and oil", 1], ["Drinking water", 1]
-  ]},
-  { id: "beach", title: "Beach and outdoors", items: [
-    ["Wetsuits"], ["Towels"], ["Swimsuits"], ["Crocs"], ["Scooters"], ["Helmets"],
-    ["Suncream", 1], ["Raincoats and fleeces", 1], ["Bucket and spade", 1]
-  ]},
-  { id: "kids", title: "Bedtime and kids", items: [
-    ["Yoto players"], ["Teddies"], ["Yoto cards and chargers", 1], ["Pyjamas", 1], ["Books", 1]
-  ]},
-  { id: "extras", title: "Extras", items: [
-    ["Bin bags"], ["Torch"], ["Kitchen roll"], ["Head torches", 1], ["Phone chargers and power bank", 1],
-    ["First aid kit and Calpol", 1], ["Toilet roll", 1], ["Wet wipes", 1],
-    ["Toothbrushes and toothpaste", 1], ["Alcohol gel"]
-  ]}
-];
-
 const KEY = "campervan-ticks";
 let ticked = {};
 try { ticked = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { ticked = {}; }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ticked)); } catch (e) {} };
 
 const grid = document.getElementById("grid");
-LIST.forEach(sec => {
-  const s = document.createElement("section");
-  const h = document.createElement("h2");
-  h.textContent = sec.title;
-  const small = document.createElement("small");
-  small.dataset.sec = sec.id;
-  h.appendChild(small);
-  s.appendChild(h);
-  const ul = document.createElement("ul");
-  sec.items.forEach(([name, suggested], i) => {
-    const id = sec.id + "-" + i;
-    const li = document.createElement("li");
-    const label = document.createElement("label");
-    const input = document.createElement("input");
-    input.type = "checkbox"; input.id = id; input.checked = !!ticked[id]; input.dataset.sec = sec.id;
-    input.addEventListener("change", () => { ticked[id] = input.checked; if (!input.checked) delete ticked[id]; save(); update(); });
-    const box = document.createElement("span"); box.className = "box";
-    const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = name;
-    label.append(input, box, txt);
-    if (suggested) { const d = document.createElement("span"); d.className = "sug"; d.title = "Extra idea"; label.appendChild(d); }
-    li.appendChild(label); ul.appendChild(li);
+let LIST = [];
+
+function toList(data) {
+  return Object.entries(data || {}).map(([title, sec], n) => ({
+    id: "s" + n,
+    title,
+    items: [
+      ...((sec && sec.items) || []).map(name => [String(name), false]),
+      ...((sec && sec.ideas) || []).map(name => [String(name), true])
+    ]
+  }));
+}
+
+function render() {
+  grid.innerHTML = "";
+  LIST.forEach(sec => {
+    const s = document.createElement("section");
+    const h = document.createElement("h2");
+    h.textContent = sec.title;
+    const small = document.createElement("small");
+    small.dataset.sec = sec.id;
+    h.appendChild(small);
+    s.appendChild(h);
+    const ul = document.createElement("ul");
+    sec.items.forEach(([name, suggested], i) => {
+      const key = sec.title + "|" + name;
+      const li = document.createElement("li");
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "checkbox"; input.id = sec.id + "-" + i; input.checked = !!ticked[key]; input.dataset.sec = sec.id;
+      input.addEventListener("change", () => { if (input.checked) ticked[key] = true; else delete ticked[key]; save(); update(); });
+      const box = document.createElement("span"); box.className = "box";
+      const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = name;
+      label.append(input, box, txt);
+      if (suggested) { const d = document.createElement("span"); d.className = "sug"; d.title = "Extra idea"; label.appendChild(d); }
+      li.appendChild(label); ul.appendChild(li);
+    });
+    s.appendChild(ul);
+    grid.appendChild(s);
   });
-  s.appendChild(ul);
-  grid.appendChild(s);
-});
+  update();
+}
 
 function update() {
   const all = [...document.querySelectorAll("input[type=checkbox]")];
@@ -177,7 +167,17 @@ function update() {
     document.querySelector('small[data-sec="' + sec.id + '"]').textContent = ins.filter(i => i.checked).length + "/" + ins.length;
   });
 }
-update();
+
+fetch("list.yaml", { cache: "no-cache" })
+  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+  .then(text => { LIST = toList(jsyaml.load(text)); render(); })
+  .catch(err => {
+    grid.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "error";
+    p.textContent = "Couldn't load the list (" + err.message + "). If you just edited list.yaml, check each line starts with \"- \" under items or ideas.";
+    grid.appendChild(p);
+  });
 
 const btns = document.getElementById("btns");
 document.getElementById("reset").addEventListener("click", () => {
