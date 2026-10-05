@@ -74,7 +74,6 @@ input:checked + .box::after { opacity: 1; }
 input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
 .txt { flex: 1; min-width: 0; }
 .error { color: var(--ink); background: var(--paper); border: 1px solid var(--gorse); border-radius: 10px; padding: 16px; margin: 0; }
-.sug { width: 8px; height: 8px; border-radius: 50%; background: var(--gorse); flex: none; }
 
 @media (max-width: 560px) {
   .tools { align-items: flex-start; }
@@ -107,7 +106,7 @@ input:checked ~ .txt { color: var(--muted); text-decoration: line-through; }
       </div>
     </div>
   </header>
-  <div class="key"><span class="dot"></span>Extra ideas added to your list. Skip any you don't need.<span class="status" id="status" data-live="0">Connecting…</span></div>
+  <div class="key"><span class="status" id="status" data-live="0">Connecting…</span></div>
   <div class="grid" id="grid"></div>
 </div>
 
@@ -164,7 +163,7 @@ function render() {
     h.appendChild(small);
     s.appendChild(h);
     const ul = document.createElement("ul");
-    sec.items.forEach(([name, suggested], i) => {
+    sec.items.forEach(([name], i) => {
       const key = toKey(sec.title, name);
       const li = document.createElement("li");
       const label = document.createElement("label");
@@ -174,7 +173,6 @@ function render() {
       const box = document.createElement("span"); box.className = "box";
       const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = name;
       label.append(input, box, txt);
-      if (suggested) { const d = document.createElement("span"); d.className = "sug"; d.title = "Extra idea"; label.appendChild(d); }
       li.appendChild(label); ul.appendChild(li);
     });
     s.appendChild(ul);
