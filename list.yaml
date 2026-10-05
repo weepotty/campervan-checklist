@@ -11,6 +11,26 @@ Van checks:
   items:
     - Water tank filled
     - Enough gas
+  ideas:
+    - Fuel topped up
+    - Waste water tank emptied
+
+Extras:
+  items:
+    - Bin bags
+    - Torch
+    - Kitchen roll
+    - Alcohol gel
+    - Portable toilet
+    - Picnic blanket
+  ideas:
+    - Phone chargers
+    - First aid kit and Calpol
+    - Toilet roll
+    - Wet wipes
+
+Kitchen:
+  items:
     - Cutlery - 4x knives, spoons, forks
     - Small cutting knife and scissors
     - Bowls
@@ -23,21 +43,6 @@ Van checks:
     - Mugs and cups
     - Pots, pan and kettle
     - Lighter or matches
-    - Fuel topped up
-    - Waste water tank emptied
-
-Extras:
-  items:
-    - Bin bags
-    - Torch
-    - Kitchen roll
-    - Alcohol gel
-    - Portable toilet
-  ideas:
-    - Phone chargers
-    - First aid kit and Calpol
-    - Toilet roll
-    - Wet wipes
 
 Bedding:
   items:
@@ -46,7 +51,6 @@ Bedding:
     - Pillowcases
   ideas:
     - Sleeping bags and pillows
-    - Spare blanket
 
 Food:
   items:
